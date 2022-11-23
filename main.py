@@ -3,8 +3,7 @@ from utils import *
 red, black = 0, 1
 go , eat = 0, 1
 
-dead_pieces = []
-board = initialize()
+board,dead_pieces, alive_pieces = initialize()
 
 def main():
     showboard(board,dead_pieces)
@@ -23,10 +22,12 @@ def main():
             print("Invalid format!")
             continue
         if perform(source,target,action,turn):
+            #print(alive_pieces)
             showboard(board,dead_pieces)
             turn = 1 - turn
 def perform(source,target,action,turn):
     source_piece = board[source[0]][source[1]]
+    #invalid action
     if source_piece == None:
         print("Invalid action, there is no piece to move!")
         return False
@@ -47,14 +48,22 @@ def perform(source,target,action,turn):
         if not is_empty(board,target):
             print("Invalid action, the target position is not empty!")
             return False
-    #arm_perform(source,target,action) # robot arm perform the task
+    #need to check whether the action will cause yourself be checkmated
+    if is_checkmate(alive_pieces,turn,source_piece,target):
+        print("Invalid action, that will make you checkmated!")
+        return False
+    #valid action
     if action == eat:
-        dead_pieces.append(board[target[0]][target[1]])    
+        alive_pieces[board[target[0]][target[1]].color].remove(board[target[0]][target[1]])
+        dead_pieces[board[target[0]][target[1]].color].append(board[target[0]][target[1]])    
     board[source[0]][source[1]] = None
     board[target[0]][target[1]] = source_piece
     source_piece.row, source_piece.col = target[0],target[1]
-    if is_checkmate(board):
-        print("************checkmate!*************")
+    #arm_perform(source,target,action) # robot arm perform the task
+    if is_checkmate(alive_pieces,turn):
+        print("****************************************************checkmate!****************************************************")
+        if is_gameover(alive_pieces,turn):
+            print(f"Game over, {'Red' if not turn else 'Black'} win!")
     return True
 if __name__ == "__main__":
     main()

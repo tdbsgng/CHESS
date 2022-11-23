@@ -1,5 +1,6 @@
 red, black = 0, 1 #row 0~4 red  row 5~9 black 
 go , eat = 0, 1
+
 def is_valid_position(target):
     return target[0] in range(10) and target[1] in range(9)
 
@@ -27,6 +28,8 @@ class general(pieces):
             and not self.is_same_positioin(target)
     def __repr__(self) -> str:
         return "帥" if self.color == red else "將"
+    def valid_actions(self):
+        pass
 
 class guard(pieces):
     def is_valid(self, target,action):
@@ -34,6 +37,8 @@ class guard(pieces):
             and not self.is_same_positioin(target)
     def __repr__(self) -> str:
         return "仕" if self.color == red else "士"
+    def valid_actions(self):
+        pass
 
 class elephant(pieces):
     def is_valid(self, target,action):
@@ -43,6 +48,8 @@ class elephant(pieces):
             and not is_pass_border(self,target[0])
     def __repr__(self) -> str:
         return "相" if self.color == red else "象"
+    def valid_actions(self):
+        pass
  
 class knight(pieces):
     def is_valid(self, target,action):
@@ -55,6 +62,8 @@ class knight(pieces):
             return False
     def __repr__(self) -> str:
         return "傌" if self.color == red else "馬"
+    def valid_actions(self):
+        pass
 class rook(pieces):
     def is_valid(self, target,action):
         if is_valid_position(target)and (target[0] == self.row or target[1] == self.col) and not self.is_same_positioin(target):
@@ -74,6 +83,8 @@ class rook(pieces):
             return False
     def __repr__(self) -> str:
         return "俥" if self.color == red else "車"  
+    def valid_actions(self):
+        pass
 class cannon(pieces): #需要考慮action
     def is_valid(self, target,action):
         if action == go:
@@ -97,6 +108,8 @@ class cannon(pieces): #需要考慮action
             return False
     def __repr__(self) -> str:
         return "炮" if self.color == red else "包"
+    def valid_actions(self):
+        pass
 
 class soldier(pieces):
     def is_valid(self, target,action):
@@ -109,6 +122,8 @@ class soldier(pieces):
                 and target[1] == self.col and ((target[0]-self.row) == 1 if self.color == red else (target[0]-self.row) ==-1)
     def __repr__(self) -> str:
         return "兵" if self.color == red else "卒"
+    def valid_actions(self):
+        pass
 
 def initialize():
     board = [[None for _ in range(9)] for _ in range(10)]
@@ -125,7 +140,16 @@ def initialize():
         board[6][col] = soldier(6,col,black,board)
     board[2][1],board[2][7] = cannon(2,1,red,board),cannon(2,7,red,board)
     board[7][1],board[7][7] = cannon(7,1,black,board),cannon(7,7,black,board)
-    return board    
+    alive_pieces = [[],[]]
+    dead_pieces = [[],[]]
+    for row in board:
+        for piece in row:
+            if piece:
+                if type(piece) == general:
+                    alive_pieces[piece.color].insert(0,piece) #general will be the first one in list
+                else:
+                    alive_pieces[piece.color].append(piece)
+    return board,dead_pieces,alive_pieces    
 
 
 def showboard(board, dead_pieces):
@@ -138,20 +162,38 @@ def showboard(board, dead_pieces):
             else:
                 print(f" {board[row][col]} ",end="")
         print("")
-    red_dead_pieces = []
-    black_dead_pieces = []
-    for piece in dead_pieces:
-        if piece.color == red:
-            red_dead_pieces.append(piece)
-        else:
-            black_dead_pieces.append(piece)
-    print(f"\nRed dead pieces: {red_dead_pieces}")
-    print(f"Black dead pieces: {black_dead_pieces}")
+
+    print(f"\nRed dead pieces: {dead_pieces[red]}")
+    print(f"Black dead pieces: {dead_pieces[black]}")
 
 def arm_perform(source,target,action):
     pass
 
-def is_checkmate(board):
-    return False
+def is_checkmate(alive_pieces,turn, source_piece=None, target=None):
+    if target == None: #post check
+        enemy_general = alive_pieces[1-turn][0].row,alive_pieces[1-turn][0].col
+        for piece in alive_pieces[turn]:
+            if piece.is_valid(enemy_general,eat):
+                return True
+        return False
+    else: #pre check
+        original_position, (source_piece.row, source_piece.col) = (source_piece.row, source_piece.col),target #target原本的棋也要保留
+        original_target = source_piece.board[target[0]][target[1]]
+        source_piece.board[target[0]][target[1]] = source_piece
+        source_piece.board[original_position[0]][original_position[1]] = None
+        self_general = alive_pieces[turn][0].row,alive_pieces[turn][0].col #動的是general 會有問題
+        for piece in alive_pieces[1-turn]:
+            if piece.is_valid(self_general,eat):
+                source_piece.row, source_piece.col = original_position
+                source_piece.board[target[0]][target[1]] = original_target
+                source_piece.board[original_position[0]][original_position[1]] = source_piece
+                return True
+        source_piece.row, source_piece.col = original_position
+        source_piece.board[target[0]][target[1]] = original_target
+        source_piece.board[original_position[0]][original_position[1]] = source_piece
+        return False
+
+def is_gameover(alive_pieces,turn): #把valid action 寫成list會比較好寫成自動判斷勝負
+    return False 
 def test_valid_action(piece):
     pass
