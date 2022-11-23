@@ -4,7 +4,7 @@ def is_valid_position(target):
     return target[0] in range(10) and target[1] in range(9)
 
 def is_in_palace(target,color):
-    return target[1] in (3,4,5) and ((target[0] in (0,1,2) and color==black) or (target[0] in (7,8,9) and color == red))
+    return target[1] in (3,4,5) and ((target[0] in (0,1,2) and color==red) or (target[0] in (7,8,9) and color == black))
 
 def is_empty(board,target):
     return board[target[0]][target[1]] == None
