@@ -1,2 +1,2 @@
-# CHESS
-Chess Helper for Elderly with Speech-recognition System
+# Chinese CHESS
+Chinese Chess Helper for Elderly with Speech-recognition System
