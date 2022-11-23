@@ -1,13 +1,13 @@
 red, black = 0, 1 #row 0~4 red  row 5~9 black 
+go , eat = 0, 1
+def is_valid_position(target):
+    return target[0] in range(10) and target[1] in range(9)
 
-def is_valid_position(row,col):
-    return row in range(10) and col in range(9)
+def is_in_palace(target,color):
+    return target[1] in (3,4,5) and ((target[0] in (0,1,2) and color==black) or (target[0] in (7,8,9) and color == red))
 
-def is_in_palace(row,col,color):
-    return col in (3,4,5) and ((row in (0,1,2) and color==black) or (row in (7,8,9) and color == red))
-
-def is_empty(board,row,col):
-    return board[row][col] == None
+def is_empty(board,target):
+    return board[target[0]][target[1]] == None
 
 def is_pass_border(piece,row):
     return row > 4 if piece.color == red else row <= 4
@@ -22,74 +22,75 @@ class pieces:
         return (self.row,self.col) == target
 
 class general(pieces):
-    def is_valid(self, target):
-        return is_in_palace(target[0], target[1], self.color) and ((target[0]-self.row)**2+(target[1]-self.col)**2 == 1)\
+    def is_valid(self, target,action):
+        return is_valid_position(target) and is_in_palace(target, self.color) and ((target[0]-self.row)**2+(target[1]-self.col)**2 == 1)\
             and not self.is_same_positioin(target)
     def __repr__(self) -> str:
         return "帥" if self.color == red else "將"
 
 class guard(pieces):
-    def is_valid(self, target):
-        return is_in_palace(target[0], target[1], self.color) and ((target[0]-self.row)**2+(target[1]-self.col)**2 == 2)\
+    def is_valid(self, target,action):
+        return is_valid_position(target) and is_in_palace(target, self.color) and ((target[0]-self.row)**2+(target[1]-self.col)**2 == 2)\
             and not self.is_same_positioin(target)
     def __repr__(self) -> str:
         return "仕" if self.color == red else "士"
 
 class elephant(pieces):
-    def is_valid(self, target):
+    def is_valid(self, target,action):
         # 拐象腳 #不能過河
-        return is_valid_position(target[0],target[1]) and ((target[0]-self.row)**2+(target[1]-self.col)**2 == 8)\
-            and is_empty(self.board,(target[0]+self.row)//2,(target[1]+self.col)//2) and not self.is_same_positioin(target)\
+        return is_valid_position(target) and ((target[0]-self.row)**2+(target[1]-self.col)**2 == 8)\
+            and is_empty(self.board,((target[0]+self.row)//2,(target[1]+self.col)//2)) and not self.is_same_positioin(target)\
             and not is_pass_border(self,target[0])
     def __repr__(self) -> str:
         return "相" if self.color == red else "象"
  
 class knight(pieces):
-    def is_valid(self, target):
-        if is_valid_position(target[0],target[1]) and ((target[0]-self.row)**2+(target[1]-self.col)**2 == 5) and not self.is_same_positioin(target):
+    def is_valid(self, target,action):
+        if is_valid_position(target) and ((target[0]-self.row)**2+(target[1]-self.col)**2 == 5) and not self.is_same_positioin(target):
             if (target[0]-self.row) in [2,-2]: #直的
-                return is_empty(self.board,(target[0]+self.row)//2,self.col)         # 拐馬腳
+                return is_empty(self.board,((target[0]+self.row)//2,self.col))         # 拐馬腳
             else: # 橫的
-                return is_empty(self.board,(target[1]+self.col)//2,self.col)
+                return is_empty(self.board,((target[1]+self.col)//2,self.col))
         else:
             return False
     def __repr__(self) -> str:
         return "傌" if self.color == red else "馬"
 class rook(pieces):
-    def is_valid(self, target):
-        if is_valid_position(target[0],target[1]) and (target[0] == self.row or target[1] == self.col) and not self.is_same_positioin(target):
+    def is_valid(self, target,action):
+        if is_valid_position(target)and (target[0] == self.row or target[1] == self.col) and not self.is_same_positioin(target):
             if target[0] == self.row: #橫的
                 col_range = range(self.col+1,target[1]) if target[1]>self.col else range(self.col-1,target[1],-1)
                 for col in col_range:
-                    if not is_empty(self.board,self.row,col):
+                    if not is_empty(self.board,(self.row,col)):
                         return False
                 return True
             else: #直的
                 row_range = range(self.row+1,target[0]) if target[0]>self.row else range(self.row-1,target[0],-1)
                 for row in row_range:
-                    if not is_empty(self.board,row,self.col):
+                    if not is_empty(self.board,(row,self.col)):
                         return False
                 return True
         else:
             return False
     def __repr__(self) -> str:
         return "俥" if self.color == red else "車"  
-
-class cannon(pieces):
-    def is_valid(self, target):
-        if is_valid_position(target[0],target[1]) and (target[0] == self.row or target[1] == self.col) and not self.is_same_positioin(target):
+class cannon(pieces): #需要考慮action
+    def is_valid(self, target,action):
+        if action == go:
+            return rook.is_valid(self,target,action)
+        if is_valid_position(target) and (target[0] == self.row or target[1] == self.col) and not self.is_same_positioin(target):
             if target[0] == self.row: #橫的
                 col_range = range(self.col+1,target[1]) if target[1]>self.col else range(self.col-1,target[1],-1)
                 count = 0
                 for col in col_range:
-                    if not is_empty(self.board,self.row,col):
+                    if not is_empty(self.board,(self.row,col)):
                         count += 1
                 return True if count == 1 else False
             else: #直的
                 row_range = range(self.row+1,target[0]) if target[0]>self.row else range(self.row-1,target[0],-1)
                 count = 0
                 for row in row_range:
-                    if not is_empty(self.board,row,self.col):
+                    if not is_empty(self.board,(row,self.col)):
                         count +=1
                 return True if count == 1 else False
         else:
@@ -98,13 +99,13 @@ class cannon(pieces):
         return "炮" if self.color == red else "包"
 
 class soldier(pieces):
-    def is_valid(self, target):
+    def is_valid(self, target,action):
         if is_pass_border(self,self.row): #可左右
-            return is_valid_position(target[0],target[1]) and not self.is_same_positioin(target) \
+            return is_valid_position(target) and not self.is_same_positioin(target) \
                 and ((target[0]-self.row)**2+(target[1]-self.col)**2 == 1) \
                 and not ((target[0]-self.row) == -1 if self.color == red else (target[0]-self.row) == 1)
         else: #只會往前
-            return is_valid_position(target[0],target[1]) and not self.is_same_positioin(target) \
+            return is_valid_position(target) and not self.is_same_positioin(target) \
                 and target[1] == self.col and ((target[0]-self.row) == 1 if self.color == red else (target[0]-self.row) ==-1)
     def __repr__(self) -> str:
         return "兵" if self.color == red else "卒"
@@ -127,13 +128,30 @@ def initialize():
     return board    
 
 
-def showboard(board):
+def showboard(board, dead_pieces):
+    print("    0   1   2   3   4   5   6   7   8 ")
     for row in range(len(board)):
+        print(str(row)+"  ",end="")
         for col in range(len(board[0])):
             if board[row][col] == None:
-                print("  ",end="")
+                print("    ",end="")
             else:
-                print(board[row][col],end="")
+                print(f" {board[row][col]} ",end="")
         print("")
+    red_dead_pieces = []
+    black_dead_pieces = []
+    for piece in dead_pieces:
+        if piece.color == red:
+            red_dead_pieces.append(piece)
+        else:
+            black_dead_pieces.append(piece)
+    print(f"\nRed dead pieces: {red_dead_pieces}")
+    print(f"Black dead pieces: {black_dead_pieces}")
+
+def arm_perform(source,target,action):
+    pass
+
+def is_checkmate(board):
+    return False
 def test_valid_action(piece):
     pass
