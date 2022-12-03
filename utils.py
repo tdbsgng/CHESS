@@ -169,7 +169,7 @@ def showboard(board, dead_pieces):
 def arm_perform(source,target,action):
     pass
 
-def is_checkmate(alive_pieces,turn, source_piece=None, target=None):
+def is_checkmate(alive_pieces,turn, source_piece=None, target=None): #王見王還沒寫
     if target == None: #post check
         enemy_general = alive_pieces[1-turn][0].row,alive_pieces[1-turn][0].col
         for piece in alive_pieces[turn]:
@@ -177,11 +177,11 @@ def is_checkmate(alive_pieces,turn, source_piece=None, target=None):
                 return True
         return False
     else: #pre check
-        original_position, (source_piece.row, source_piece.col) = (source_piece.row, source_piece.col),target #target原本的棋也要保留
+        original_position, (source_piece.row, source_piece.col) = (source_piece.row, source_piece.col),target
         original_target = source_piece.board[target[0]][target[1]]
         source_piece.board[target[0]][target[1]] = source_piece
         source_piece.board[original_position[0]][original_position[1]] = None
-        self_general = alive_pieces[turn][0].row,alive_pieces[turn][0].col #動的是general 會有問題
+        self_general = alive_pieces[turn][0].row,alive_pieces[turn][0].col 
         for piece in alive_pieces[1-turn]:
             if piece.is_valid(self_general,eat):
                 source_piece.row, source_piece.col = original_position
