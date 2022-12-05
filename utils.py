@@ -188,6 +188,11 @@ def is_checkmate(alive_pieces,turn, source_piece=None, target=None): #王見王�
                 source_piece.board[target[0]][target[1]] = original_target
                 source_piece.board[original_position[0]][original_position[1]] = source_piece
                 return True
+        if self_general[1] == alive_pieces[1-turn][0].col:
+            for row in range(min(self_general[0],alive_pieces[1-turn][0].row)+1, max(self_general[0],alive_pieces[1-turn][0].row)):
+                if source_piece.board[row][self_general[1]] != None:
+                    return False
+            return True
         source_piece.row, source_piece.col = original_position
         source_piece.board[target[0]][target[1]] = original_target
         source_piece.board[original_position[0]][original_position[1]] = source_piece

@@ -61,7 +61,7 @@ def perform(source,target,action,turn):
     source_piece.row, source_piece.col = target[0],target[1]
     #arm_perform(source,target,action) # robot arm perform the task
     if is_checkmate(alive_pieces,turn):
-        print("****************************************************checkmate!****************************************************")
+        print("****************************************************check!****************************************************")
         if is_gameover(alive_pieces,turn):
             print(f"Game over, {'Red' if not turn else 'Black'} win!")
     return True

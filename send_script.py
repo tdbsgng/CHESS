@@ -116,7 +116,7 @@ def main(args=None):
     if width>height:
         height,width= max(height,width),min(width,height)
         angle = 90 - angle
-     k = width/82
+    k = width/82
     print(angle)
     #棋盤上的座標順時針旋轉90-angle 即為 image座標
     # print(f'before rotation {height/2,width/2}')

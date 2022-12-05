@@ -1,7 +1,7 @@
 import speech_recognition as sr
 import Levenshtein as lv
 from difflib import SequenceMatcher
-import requests
+# import requests
 
 def similar(a, b):
     return SequenceMatcher(None, a, b).ratio()
@@ -84,8 +84,8 @@ if __name__ == "__main__":
         "x": x,
         "y": y
     }
-    # POST request
-    res = requests.post("http://localhost:5000/listen/send", json=jsonfile)
-    if res.ok:
-        print(res.json)
+    # # POST request
+    # res = requests.post("http://localhost:5000/listen/send", json=jsonfile)
+    # if res.ok:
+    #     print(res.json)
     
